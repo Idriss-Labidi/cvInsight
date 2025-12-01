@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Eye, Edit, BarChart2, Trash2, Plus, Upload, FileText, Calendar, TrendingUp } from 'lucide-react';
+import { Eye, Edit, BarChart2, Trash2, Plus, Upload, FileText, Calendar, TrendingUp, Award, Clock, Target,  Star, Activity } from 'lucide-react';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import axiosInstance from "../../utils/axiosInstance";
-
+import ResumeViewer from "../../components/common/ResumeViewer.tsx";
 // Types
 interface Resume {
     id: string;
@@ -19,12 +19,13 @@ interface Resume {
 
 export default function Dashboard() {
     const navigate = useNavigate();
-    const [resumes, setResumes] = useState<Resume[] >([]);
+    const [resumes, setResumes] = useState<Resume[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
     const [showAddMenu, setShowAddMenu] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
 
     // Fetch resumes from API
     useEffect(() => {
@@ -58,7 +59,13 @@ export default function Dashboard() {
     };
 
     const handleView = (id: string) => {
-        navigate(`/resume/view/${id}`);
+        const resume = resumes.find(r => r.id === id);
+        if (resume) {
+            setSelectedResume(resume);
+        }
+    };
+    const handleCloseViewer = () => {
+        setSelectedResume(null);
     };
 
     const handleSendToBuilder = (id: string) => {
@@ -73,28 +80,84 @@ export default function Dashboard() {
         resume?.filename.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Calculate statistics
+    const avgScore = resumes.length > 0
+        ? Math.round(resumes.reduce((acc, r) => acc + (r.score || 0), 0) / resumes.length)
+        : 0;
+
+    const highScoreResumes = resumes.filter(r => (r.score || 0) >= 80).length;
+    const recentResumes = resumes.filter(r => {
+        const uploadDate = new Date(r.uploadedAt);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return uploadDate >= weekAgo;
+    }).length;
+
+    const topResume = resumes.length > 0
+        ? resumes.reduce((prev, current) => ((prev.score || 0) > (current.score || 0)) ? prev : current)
+        : null;
+
+    // Score distribution
+    const scoreDistribution = {
+        excellent: resumes.filter(r => (r.score || 0) >= 80).length,
+        good: resumes.filter(r => (r.score || 0) >= 60 && (r.score || 0) < 80).length,
+        needsWork: resumes.filter(r => (r.score || 0) < 60).length,
+    };
+
     const stats = [
         {
             label: 'Total Resumes',
             value: resumes.length,
             icon: <FileText className="w-6 h-6" />,
-            color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+            color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+            trend: recentResumes > 0 ? `+${recentResumes} this week` : 'No new uploads'
         },
         {
-            label: 'Avg. Score',
-            value: resumes.length > 0
-                ? Math.round(resumes.reduce((acc, r) => acc + (r.score || 0), 0) / resumes.length)
-                : 0,
+            label: 'Average Score',
+            value: `${avgScore}%`,
             icon: <TrendingUp className="w-6 h-6" />,
-            color: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+            color: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+            trend: avgScore >= 70 ? 'Great performance!' : 'Room for improvement'
+        },
+        {
+            label: 'High Performers',
+            value: highScoreResumes,
+            icon: <Award className="w-6 h-6" />,
+            color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+            trend: `${highScoreResumes} resumes scoring 80+`
         },
         {
             label: 'Last Updated',
             value: resumes.length > 0
                 ? new Date(Math.max(...resumes.map(r => new Date(r.uploadedAt).getTime()))).toLocaleDateString()
                 : 'N/A',
-            icon: <Calendar className="w-6 h-6" />,
-            color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+            icon: <Clock className="w-6 h-6" />,
+            color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
+            trend: 'Keep your resumes fresh'
+        },
+    ];
+
+    const quickActions = [
+        {
+            title: 'Create New Resume',
+            description: 'Build from scratch',
+            icon: <Edit className="w-5 h-5" />,
+            color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+            action: () => navigate('/resume-builder')
+        },
+        {
+            title: 'Upload Resume',
+            description: 'Extract from file',
+            icon: <Upload className="w-5 h-5" />,
+            color: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+            action: () => navigate('/CvExtractionPage')
+        },
+        {
+            title: 'View Analytics',
+            description: 'Track performance',
+            icon: <BarChart2 className="w-5 h-5" />,
+            color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+            action: () => navigate('/analytics')
         },
     ];
 
@@ -129,7 +192,7 @@ export default function Dashboard() {
                             />
                             <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
                                 <Link
-                                    to="/resume/upload"
+                                    to="/CvExtractionPage"
                                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                     onClick={() => setShowAddMenu(false)}
                                 >
@@ -142,7 +205,7 @@ export default function Dashboard() {
                                     </div>
                                 </Link>
                                 <Link
-                                    to="/resume/builder"
+                                    to="/resume-builder"
                                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                     onClick={() => setShowAddMenu(false)}
                                 >
@@ -161,39 +224,153 @@ export default function Dashboard() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {stats.map((stat, index) => (
                     <div
                         key={index}
-                        className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
+                        className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
                     >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                                    {stat.value}
-                                </p>
-                            </div>
+                        <div className="flex items-center justify-between mb-4">
                             <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
                                 {stat.icon}
                             </div>
                         </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{stat.label}</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            {stat.value}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{stat.trend}</p>
                     </div>
                 ))}
             </div>
 
+            {/* Score Distribution & Top Resume */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Score Distribution */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Score Distribution</h2>
+                        <Activity className="w-5 h-5 text-gray-400" />
+                    </div>
+
+                    <div className="space-y-4">
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Excellent (80+)</span>
+                                <span className="text-sm font-bold text-green-600 dark:text-green-400">{scoreDistribution.excellent}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                                    style={{ width: `${resumes.length > 0 ? (scoreDistribution.excellent / resumes.length) * 100 : 0}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Good (60-79)</span>
+                                <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">{scoreDistribution.good}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                    className="bg-yellow-500 h-2 rounded-full transition-all duration-500"
+                                    style={{ width: `${resumes.length > 0 ? (scoreDistribution.good / resumes.length) * 100 : 0}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Needs Work (&lt;60)</span>
+                                <span className="text-sm font-bold text-red-600 dark:text-red-400">{scoreDistribution.needsWork}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div
+                                    className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                                    style={{ width: `${resumes.length > 0 ? (scoreDistribution.needsWork / resumes.length) * 100 : 0}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Top Performer */}
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <Star className="w-6 h-6" />
+                        </div>
+                        <h2 className="text-lg font-semibold">Top Performer</h2>
+                    </div>
+
+                    {topResume ? (
+                        <>
+                            <p className="text-white/90 text-sm mb-2">Your highest-scoring resume:</p>
+                            <p className="text-xl font-bold mb-4 truncate">{topResume.filename}</p>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-white/80 text-sm">Score</p>
+                                    <p className="text-3xl font-bold">{topResume.score}%</p>
+                                </div>
+                                <button
+                                    onClick={() => handleView(topResume.id)}
+                                    className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                                >
+                                    View Resume
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-white/80">No resumes with scores yet</p>
+                            <p className="text-sm text-white/60 mt-2">Analyze your resumes to get scores</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {quickActions.map((action, index) => (
+                        <button
+                            key={index}
+                            onClick={action.action}
+                            className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all hover:shadow-md"
+                        >
+                            <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center flex-shrink-0`}>
+                                {action.icon}
+                            </div>
+                            <div className="text-left">
+                                <p className="font-medium text-gray-900 dark:text-white">{action.title}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{action.description}</p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* Search Bar */}
-            <div className="relative max-w-md">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                    type="text"
-                    placeholder="Search resumes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text"
+                        placeholder="Search resumes..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                {filteredResumes.length > 0 && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {filteredResumes.length} of {resumes.length} resumes
+                    </p>
+                )}
             </div>
 
             {/* Resumes List */}
@@ -266,7 +443,7 @@ export default function Dashboard() {
                                     <div className="flex-1">
                                         <div className="flex items-start gap-3">
                                             <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                                                {resume.filename.charAt(0)}
+                                                {resume.filename.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
@@ -275,16 +452,17 @@ export default function Dashboard() {
                                                 <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                                                     <span className="flex items-center gap-1">
                                                         <Calendar className="w-4 h-4" />
-                                                        Modified: {new Date(resume.uploadedAt).toLocaleDateString()}
+                                                        {new Date(resume.uploadedAt).toLocaleDateString()}
                                                     </span>
                                                     {resume.score && (
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${
                                                             resume.score >= 80
                                                                 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                                                                 : resume.score >= 60
                                                                     ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                                                                     : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                                         }`}>
+                                                            <Target className="w-3 h-3" />
                                                             Score: {resume.score}%
                                                         </span>
                                                     )}
@@ -324,7 +502,7 @@ export default function Dashboard() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleDelete(resume.id)}
-                                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                                    className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                                                 >
                                                     Confirm
                                                 </button>
@@ -349,16 +527,15 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         ))}
+
                     </div>
                 )}
+                <ResumeViewer
+                    resume={selectedResume}
+                    onClose={handleCloseViewer}
+                />
             </div>
 
-            {/* Results Count */}
-            {!isLoading && filteredResumes.length > 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                    Showing {filteredResumes.length} of {resumes.length} resumes
-                </p>
-            )}
         </div>
     );
 }
