@@ -1,7 +1,7 @@
-import  { createContext, useContext, useState, useRef, ReactNode, RefObject, useEffect } from "react";
+import  { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { TemplateTheme } from '../../types/resume.types.ts';
-import { RESUME_TEMPLATES } from '../../data/resumeTemplates.data';
+import { RESUME_TEMPLATES } from './templates/resume.templates.ts';
 
 export type TemplateType = "modern" | "minimalist" | "professional";
 
@@ -49,7 +49,6 @@ export interface Project {
     github: string;
     description: string;
 }
-//TODO: Add languages , social activities and certifications
 
 export interface Language {
     id: string;
@@ -93,7 +92,6 @@ interface ResumeContextType {
     setSocialActivities: (socialActivities: SocialActivity[]) => void;
     template: TemplateType;
     setTemplate: (template: TemplateType) => void;
-    printElem: RefObject<HTMLDivElement | null>;
     selectedTemplate: string;
     setSelectedTemplate: (templateId: string) => void;
     templateTheme: TemplateTheme;
@@ -111,7 +109,6 @@ export const useResume = (): ResumeContextType => {
 };
 
 export const ResumeProvider = ({ children }: { children: ReactNode }) => {
-    const printElem = useRef<HTMLDivElement | null>(null);
     const [selectedTemplate, setSelectedTemplate] = useState('classic-blue');
     const [templateTheme, setTemplateTheme] = useState<TemplateTheme>('blue');
     const [template, setTemplate] = useState<TemplateType>("modern");
@@ -205,7 +202,6 @@ export const ResumeProvider = ({ children }: { children: ReactNode }) => {
                 setSocialActivities,
                 template,
                 setTemplate,
-                printElem,
                 selectedTemplate,
                 setSelectedTemplate,
                 templateTheme,

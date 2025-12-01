@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AgentMigrationStateService">
+    <option name="migrationStatus" value="IN_PROGRESS" />
     <option name="pendingSessionIds">
+      <option value="0214e80e-37a5-4892-b8a2-0d2b0d15caae" />
       <option value="050aae32-ee55-455f-bf30-59a154bc13a3" />
+      <option value="188a6a91-ec21-4489-aa77-a056e1105f07" />
+      <option value="3cf90915-9042-4f9b-9ed4-90f92c9fd171" />
+      <option value="7c10a102-dfc7-435f-b203-c7923dfc6a47" />
+      <option value="8f86ae3c-357b-4ac6-8fc2-a5452d692aa9" />
+      <option value="e0d0cd80-7fc4-4f82-a575-531e660ed1c6" />
     </option>
     <option name="pendingTurns">
       <map>
@@ -16,13 +23,7 @@
       </map>
     </option>
     <pendingWorkingSetItems>
-      <entry key="050aae32-ee55-455f-bf30-59a154bc13a3">
-        <set>
-          <option value="file://$PROJECT_DIR$/frontend/src/types/resumeContent.types.ts" />
-          <option value="file://$PROJECT_DIR$/frontend/src/pages/ResumeBuilders/CVBuilder.tsx" />
-          <option value="file://$PROJECT_DIR$/frontend/src/pages/ResumeBuilders/ResumePDF.tsx" />
-        </set>
-      </entry>
+      <entry key="050aae32-ee55-455f-bf30-59a154bc13a3" />
     </pendingWorkingSetItems>
   </component>
 </project>

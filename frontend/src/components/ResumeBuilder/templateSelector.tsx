@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TemplateLayout } from '../../types/resume.types.ts';
-import { RESUME_TEMPLATES } from '../../data/resumeTemplates.data';
+import { RESUME_TEMPLATES } from './templates/resume.templates.ts';
 
 interface TemplateSelectorProps {
     selectedTemplate: string;

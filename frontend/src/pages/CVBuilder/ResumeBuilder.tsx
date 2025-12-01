@@ -1,20 +1,18 @@
 import React, { useState } from "react";
-import { ResumeProvider, useResume } from "./ResumeContext";
-import About from "./About";
-import Education from "./Education";
-import Work from "./Work";
-import Skills from "./Skills";
-import Projects from "./Projects";
-import ResumePreview from "./ResumePreview";
-import { TemplateSelector } from "./templateSelector";
-import PageBreadcrumb from "../common/PageBreadCrumb.tsx";
-import SocialActivities from "./SocialActivities";
-import Certifications from "./Certifications";
-import Languages from "./Languages";
-
-// Installer ces packages:
-// npm install jspdf html2canvas
-// npm install --save-dev @types/jspdf
+import { pdf } from "@react-pdf/renderer";
+import ResumePdfDocument from "../../components/ResumeBuilder/ResumePdfDocument.tsx";
+import { ResumeProvider, useResume } from "../../components/ResumeBuilder/ResumeContext.tsx";
+import About from "../../components/ResumeBuilder/About.tsx";
+import Education from "../../components/ResumeBuilder/Education.tsx";
+import Work from "../../components/ResumeBuilder/Work.tsx";
+import Skills from "../../components/ResumeBuilder/Skills.tsx";
+import Projects from "../../components/ResumeBuilder/Projects.tsx";
+import ResumePreview from "../../components/ResumeBuilder/ResumePreview.tsx";
+import { TemplateSelector } from "../../components/ResumeBuilder/templateSelector.tsx";
+import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
+import SocialActivities from "../../components/ResumeBuilder/SocialActivities.tsx";
+import Certifications from "../../components/ResumeBuilder/Certifications.tsx";
+import Languages from "../../components/ResumeBuilder/Languages.tsx";
 
 const tabs = [
     {
@@ -107,7 +105,7 @@ const tabs = [
 const ResumeBuilderContent: React.FC = () => {
     const [activeTab, setActiveTab] = useState("template");
     const [isDownloading, setIsDownloading] = useState(false);
-    const { selectedTemplate, setSelectedTemplate, about, printElem } = useResume();
+    const { selectedTemplate, setSelectedTemplate, about , educationList, workList, skills, softSkills, interests, projects, languages, certificates, socialActivities } = useResume();
 
     const renderTab = () => {
         switch (activeTab) {
@@ -135,68 +133,32 @@ const ResumeBuilderContent: React.FC = () => {
     };
 
     const handleDownloadPDF = async () => {
-        if (!printElem?.current) {
-            alert("Resume preview not found!");
-            return;
-        }
-
         setIsDownloading(true);
-
         try {
-            // Dynamically import libraries
-            const html2canvas = (await import('html2canvas')).default;
-            const jsPDF = (await import('jspdf')).default;
+            const blob = await pdf(
+                <ResumePdfDocument
+                    about={about}
+                    educationList={educationList}
+                    workList={workList}
+                    skills={skills}
+                    softSkills={softSkills}
+                    interests={interests}
+                    projects={projects}
+                    languages={languages}
+                    certificates={certificates}
+                    socialActivities={socialActivities}
+                    templateId={selectedTemplate}
+                />
+            ).toBlob();
 
-            const element = printElem.current;
-
-            // Capture the element as canvas
-            const canvas = await html2canvas(element, {
-                scale: 2, // Higher quality
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-
-            // A4 dimensions in mm
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-
-            // Calculate image dimensions to fit A4
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            // Add first page
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-
-            // Add additional pages if content is long
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
-            }
-
-            // Generate filename
-            const fileName = about.name
-                ? `${about.name.replace(/\s+/g, '_')}_Resume.pdf`
-                : 'Resume.pdf';
-
-            // Download the PDF
-            pdf.save(fileName);
-
-
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (about.name ? `${about.name.replace(/\s+/g, '_')}_Resume.pdf` : 'Resume.pdf');
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Failed to download PDF. Please try again.');

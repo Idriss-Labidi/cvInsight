@@ -15,10 +15,8 @@ import AuthGuard from "./components/auth/AuthGuard.tsx";
 import CvExtractionPage from "./pages/CVExtractionpage/CvExtractionPage.tsx";
 import CvAnalysis from "./pages/CVAnalysis/CvAnalysis.tsx";
 import CareerRecommendations from "./pages/RecommandationPage/CareerRecommendations.tsx";
-import ResumeBuilder from "./components/ResumeBuilder/ResumeBuilder.tsx";
+import ResumeBuilder from "./pages/CVBuilder/ResumeBuilder.tsx";
 import PublicRoute from "./components/auth/PublicRoute.tsx";
-import CVBuilder from "./pages/ResumeBuilders/CVBuilder.tsx";
-
 
 export default function App() {
     return (
@@ -63,8 +61,6 @@ export default function App() {
                                 <Route path="/CvAnalysis" element={<CvAnalysis />}/>
                                 <Route path="/Recommendation" element={<CareerRecommendations/>}/>
                                 <Route path="/resume-builder" element={<ResumeBuilder />} />
-                                <Route path="/resume-builder-v2" element={<CVBuilder />} />
-
                             </Route>
                         </Route>
 
