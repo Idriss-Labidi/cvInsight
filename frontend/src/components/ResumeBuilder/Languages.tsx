@@ -22,19 +22,19 @@ const Languages: React.FC = () => {
     };
 
 
-    const deleteLanguage = (index: number) => {
-        const updatedLanguages = languages.filter((_:any, i:any) => i !== index);
+    const deleteLanguage = (id: string) => {
+        const updatedLanguages = languages.filter((lang:any) => lang.id !== id);
         setLanguages(updatedLanguages);
     };
 
     return (
         <div className="space-y-8 max-w-3xl mx-auto">
             {languages.map((language:any, index:any) => (
-                <div key={index} className="group border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 dark:border-gray-700">
+                <div key={language.id ||index} className="group border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-gray-900 dark:border-gray-700">
                     <header className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-t-xl">
                         <h3 className="font-semibold text-blue-600 text-lg">{language.name || "Language"}</h3>
                         <button
-                            onClick={() => deleteLanguage(index)}
+                            onClick={() => deleteLanguage(language.id)}
                             className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             title="Delete"
                         >
@@ -52,7 +52,7 @@ const Languages: React.FC = () => {
                                     id={`name-${index}`}
                                     name="name"
                                     value={language.name}
-                                    onChange={(e) => handleLanguageChange(e, index)}
+                                    onChange={(e) => handleLanguageChange(e, language.id)}
                                     className="mt-1 block w-full rounded-xl border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                                 />
                             </div>
@@ -63,7 +63,7 @@ const Languages: React.FC = () => {
                                     id={`level-${index}`}
                                     name="level"
                                     value={language.level}
-                                    onChange={(e) => handleLanguageChange(e, index)}
+                                    onChange={(e) => handleLanguageChange(e, language.id)}
                                     className="mt-1 block w-full rounded-xl border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                                 />
                             </div>

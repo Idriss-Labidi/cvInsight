@@ -73,7 +73,7 @@ export default function Dashboard() {
     };
 
     const handleSendToAnalyzer = (id: string) => {
-        navigate(`/resume/analyzer/${id}`);
+        navigate(`/CvAnalysis?id=${id}`, { state: { resumeId: id } });
     };
 
     const filteredResumes = resumes.filter(resume =>

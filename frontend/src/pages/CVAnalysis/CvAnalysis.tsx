@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router";
 import CvAnalysisResult from "./CvAnalysisResult";
 import PageMeta from "../../components/common/PageMeta.tsx";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
@@ -15,6 +16,16 @@ export default function CvAnalysis() {
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pendingSelectionId, setPendingSelectionId] = useState<string | null>(null);
+    const location = useLocation();
+
+    const resumeIdFromUrl = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const queryId = params.get("id");
+        // prefer state if provided, fallback to query param
+        const stateId = (location.state as { resumeId?: string } | null)?.resumeId;
+        return stateId || queryId;
+    }, [location]);
 
     useEffect(() => {
         setResumesLoading(true);
@@ -26,6 +37,12 @@ export default function CvAnalysis() {
             })
             .finally(() => setResumesLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (resumeIdFromUrl) {
+            setPendingSelectionId(resumeIdFromUrl);
+        }
+    }, [resumeIdFromUrl]);
 
     const handleSelect = (id: string) => {
         setLoading(true);
@@ -58,6 +75,16 @@ export default function CvAnalysis() {
                 setError("Could not load PDF file.");
             })
     };
+
+    useEffect(() => {
+        if (!pendingSelectionId || resumes.length === 0) return;
+        const found = resumes.find(r => r.id === pendingSelectionId);
+        if (found) {
+            setSelectedResume(found);
+            handleSelect(found.id);
+            setPendingSelectionId(null);
+        }
+    }, [pendingSelectionId, resumes]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
