@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { pdf } from "@react-pdf/renderer";
-import ResumePdfDocument from "../../components/ResumeBuilder/ResumePdfDocument.tsx";
+import ResumePdfDocument from "../../components/cvbuilder/ResumePdfDocument.tsx";
 import { ResumeProvider, useResume } from "../../context/ResumeContext.tsx";
-import About from "../../components/ResumeBuilder/About.tsx";
-import Education from "../../components/ResumeBuilder/Education.tsx";
-import Work from "../../components/ResumeBuilder/Work.tsx";
-import Skills from "../../components/ResumeBuilder/Skills.tsx";
-import Projects from "../../components/ResumeBuilder/Projects.tsx";
-import ResumePreview from "../../components/ResumeBuilder/ResumePreview.tsx";
-import { TemplateSelector } from "../../components/ResumeBuilder/templateSelector.tsx";
+import About from "../../components/cvbuilder/About.tsx";
+import Education from "../../components/cvbuilder/Education.tsx";
+import Work from "../../components/cvbuilder/Work.tsx";
+import Skills from "../../components/cvbuilder/Skills.tsx";
+import Projects from "../../components/cvbuilder/Projects.tsx";
+import ResumePreview from "../../components/cvbuilder/ResumePreview.tsx";
+import { TemplateSelector } from "../../components/cvbuilder/templateSelector.tsx";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
-import SocialActivities from "../../components/ResumeBuilder/SocialActivities.tsx";
-import Certifications from "../../components/ResumeBuilder/Certifications.tsx";
-import Languages from "../../components/ResumeBuilder/Languages.tsx";
+import SocialActivities from "../../components/cvbuilder/SocialActivities.tsx";
+import Certifications from "../../components/cvbuilder/Certifications.tsx";
+import Languages from "../../components/cvbuilder/Languages.tsx";
 
 const tabs = [
     {
