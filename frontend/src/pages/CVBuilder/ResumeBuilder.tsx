@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { pdf } from "@react-pdf/renderer";
 import ResumePdfDocument from "../../components/ResumeBuilder/ResumePdfDocument.tsx";
-import { ResumeProvider, useResume } from "../../components/ResumeBuilder/ResumeContext.tsx";
+import { ResumeProvider, useResume } from "../../context/ResumeContext.tsx";
 import About from "../../components/ResumeBuilder/About.tsx";
 import Education from "../../components/ResumeBuilder/Education.tsx";
 import Work from "../../components/ResumeBuilder/Work.tsx";

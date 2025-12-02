@@ -1,5 +1,5 @@
 import React from "react";
-import { About, Education, Work, Skill, Project, Language, Certificate, SocialActivity } from "./ResumeContext";
+import { About, Education, Work, Skill, Project, Language, Certificate, SocialActivity } from "../../context/ResumeContext.tsx";
 import Template1 from "./templates/Template1.tsx";
 import Template3 from "./templates/Template3.tsx";
 import Template4 from "./templates/Template4.tsx";

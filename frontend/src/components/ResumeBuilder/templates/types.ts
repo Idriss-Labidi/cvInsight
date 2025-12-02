@@ -1,4 +1,4 @@
-import { About, Education, Work, Skill, Project, Language, Certificate, SocialActivity } from "../ResumeContext";
+import { About, Education, Work, Skill, Project, Language, Certificate, SocialActivity } from "../../../context/ResumeContext.tsx";
 
 export interface ResumePdfProps {
   about: About;

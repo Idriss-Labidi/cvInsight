@@ -1,5 +1,5 @@
 import React from "react";
-import { useResume } from "./ResumeContext";
+import { useResume } from "../../context/ResumeContext.tsx";
 
 const About: React.FC = () => {
     const { about, setAbout } = useResume();

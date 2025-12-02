@@ -1,5 +1,5 @@
 import React from "react";
-import { useResume } from "./ResumeContext";
+import { useResume } from "../../context/ResumeContext.tsx";
 import { v4 as uuidv4 } from "uuid";
 
 const SocialActivities: React.FC = () => {

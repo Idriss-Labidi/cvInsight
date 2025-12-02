@@ -1,5 +1,5 @@
 import { BlobProvider } from "@react-pdf/renderer";
-import { useResume } from "./ResumeContext";
+import { useResume } from "../../context/ResumeContext.tsx";
 import ResumePdfDocument from "./ResumePdfDocument";
 import { useEffect, useState, useMemo, forwardRef } from 'react';
 
