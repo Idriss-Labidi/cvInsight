@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import { pdf } from "@react-pdf/renderer";
 import ResumePdfDocument from "../../components/cvbuilder/ResumePdfDocument.tsx";
-import { ResumeProvider, useResume } from "../../context/ResumeContext.tsx";
+import { useResume } from "../../context/ResumeContext.tsx";
 import About from "../../components/cvbuilder/About.tsx";
 import Education from "../../components/cvbuilder/Education.tsx";
 import Work from "../../components/cvbuilder/Work.tsx";
@@ -294,11 +294,12 @@ const ResumeBuilderContent: React.FC = () => {
 
 const ResumeBuilder: React.FC = () => {
     return (
-        <ResumeProvider>
+        <>
             <PageBreadcrumb pageTitle="Resume Builder"></PageBreadcrumb>
             <ResumeBuilderContent />
-        </ResumeProvider>
+        </>
     );
 };
 
 export default ResumeBuilder;
+

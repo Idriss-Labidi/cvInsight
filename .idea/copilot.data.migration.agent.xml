@@ -26,6 +26,14 @@
             </set>
           </value>
         </entry>
+        <entry key="5ab6f762-a5b0-4e22-af3f-5eceb317ef28">
+          <value>
+            <set>
+              <option value="b540a25b-7a59-48dd-a925-25b1fd20b52d" />
+              <option value="591475dd-2c1f-4d4a-bcc8-71a32c1e25a2" />
+            </set>
+          </value>
+        </entry>
         <entry key="77acaebf-9d09-4bed-b23e-b5be566c97d6">
           <value>
             <set>
@@ -37,6 +45,13 @@
     </option>
     <pendingWorkingSetItems>
       <entry key="050aae32-ee55-455f-bf30-59a154bc13a3" />
+      <entry key="5ab6f762-a5b0-4e22-af3f-5eceb317ef28">
+        <set>
+          <option value="file://$PROJECT_DIR$/frontend/src/main.tsx" />
+          <option value="file://$PROJECT_DIR$/frontend/src/pages/CVExtractionpage/CvExtractionPage.tsx" />
+          <option value="file://$PROJECT_DIR$/frontend/src/pages/CVBuilder/ResumeBuilder.tsx" />
+        </set>
+      </entry>
       <entry key="77acaebf-9d09-4bed-b23e-b5be566c97d6" />
     </pendingWorkingSetItems>
   </component>

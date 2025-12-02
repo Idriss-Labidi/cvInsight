@@ -3,8 +3,9 @@ import {useState} from "react";
 import PageMeta from "../../components/common/PageMeta.tsx";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
 import CvUploader from "../../components/CvUploader.tsx";
-import { ResumeProvider, useResume } from "../../context/ResumeContext.tsx";
+import { useResume } from "../../context/ResumeContext.tsx";
 import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router';
 
 export default function CvExtractionPage() {
     return (
@@ -15,9 +16,7 @@ export default function CvExtractionPage() {
             />
             <PageBreadcrumb pageTitle="Resume Extraction" />
 
-            <ResumeProvider>
-                <CvExtractionContent />
-            </ResumeProvider>
+            <CvExtractionContent />
         </>
     );
 }
@@ -27,6 +26,8 @@ function CvExtractionContent() {
     const [result, setResult] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [populated, setPopulated] = useState(false);
+
+    const navigate = useNavigate();
 
     // Resume context setters
     const {
@@ -224,7 +225,6 @@ function CvExtractionContent() {
 
             setPopulated(true);
         } catch (e) {
-            // If mapping fails, keep the raw result visible. Do not throw UI errors.
             console.warn('Failed to map parsed resume into context', e);
         }
     };
@@ -236,8 +236,8 @@ function CvExtractionContent() {
     };
 
     const openResumeBuilder = () => {
-        // Navigate to the resume builder. Using location to avoid router import mismatch.
-        window.location.href = '/resume-builder';
+        // Use SPA navigation to preserve in-memory context
+        navigate('/resume-builder');
     };
 
     return (
