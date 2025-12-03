@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Eye, Edit, BarChart2, Trash2, Plus, Upload, FileText, Calendar, TrendingUp, Award, Clock, Target,  Star, Activity } from 'lucide-react';
+import { Eye, Edit, BarChart2, Trash2, Plus, Upload, FileText, Calendar, TrendingUp, Award, Clock, Target, Star, Activity } from 'lucide-react';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import axiosInstance from "../../utils/axiosInstance";
 import ResumeViewer from "../../components/common/ResumeViewer.tsx";
+import { useResume } from "../../context/ResumeContext.tsx";
+import { v4 as uuidv4 } from 'uuid';
+
 // Types
 interface Resume {
     id: string;
     contentType: string;
     fileData: string;
     filename: string;
-    jsonContent: JSON;
+    jsonContent: any;
     origin: string;
     size: number;
     uploadedAt: string;
@@ -26,6 +29,20 @@ export default function Dashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
+
+    // Resume context setters
+    const {
+        setAbout,
+        setEducationList,
+        setSkills,
+        setSoftSkills,
+        setInterests,
+        setWorkList,
+        setProjects,
+        setLanguages,
+        setCertificates,
+        setSocialActivities,
+    } = useResume();
 
     // Fetch resumes from API
     useEffect(() => {
@@ -64,12 +81,209 @@ export default function Dashboard() {
             setSelectedResume(resume);
         }
     };
+
     const handleCloseViewer = () => {
         setSelectedResume(null);
     };
 
-    const handleSendToBuilder = (id: string) => {
-        navigate(`/resume/builder/${id}`);
+    // Helper functions for data mapping
+    const asRecord = (x: unknown): Record<string, unknown> => (x && typeof x === 'object') ? (x as Record<string, unknown>) : {};
+
+    const getString = (obj: Record<string, unknown>, ...keys: string[]) => {
+        for (const k of keys) {
+            const v = obj[k];
+            if (typeof v === 'string' && v.trim() !== '') return v;
+            if (typeof v === 'number') return String(v);
+        }
+        return '';
+    };
+
+    const getNumber = (obj: Record<string, unknown>, ...keys: string[]) => {
+        for (const k of keys) {
+            const v = obj[k];
+            if (typeof v === 'number') return v;
+            if (typeof v === 'string') {
+                const n = parseInt(v as string, 10);
+                if (!isNaN(n)) return n;
+            }
+        }
+        return 0;
+    };
+
+    const getArrayFrom = (obj: Record<string, unknown>, ...keys: string[]) => {
+        for (const k of keys) {
+            const v = obj[k];
+            if (Array.isArray(v)) return v as unknown[];
+        }
+        return null;
+    };
+
+    const populateResumeContext = (data: any) => {
+        try {
+            if (!data || typeof data !== 'object') return false;
+
+            const root = asRecord(data);
+
+            // About
+            const aboutSrc = root['about'] ?? root['personal'] ?? root['profile'];
+            if (aboutSrc && typeof aboutSrc === 'object') {
+                const src = asRecord(aboutSrc);
+                const about = {
+                    name: getString(src, 'name', 'fullName'),
+                    role: getString(src, 'role', 'title', 'profession'),
+                    email: getString(src, 'email'),
+                    phone: getString(src, 'phone', 'telephone'),
+                    address: getString(src, 'address'),
+                    linkedin: getString(src, 'linkedin', 'linkedinUrl'),
+                    github: getString(src, 'github', 'githubUrl'),
+                    portfolio: getString(src, 'portfolio', 'website'),
+                    picture: getString(src, 'picture'),
+                    summary: getString(src, 'summary', 'bio', 'description'),
+                };
+                setAbout(about);
+            }
+
+            // Education
+            const educArr = getArrayFrom(root, 'education', 'educations');
+            if (educArr) {
+                const edu = educArr.map(item => {
+                    const e = asRecord(item);
+                    return {
+                        id: uuidv4(),
+                        degree: getString(e, 'degree', 'qualification'),
+                        school: getString(e, 'school', 'institution', 'university'),
+                        startYr: getNumber(e, 'startYr', 'startYear', 'fromYear'),
+                        endYr: getNumber(e, 'endYr', 'endYear', 'toYear'),
+                        grade: getString(e, 'grade', 'score', 'result'),
+                    };
+                });
+                if (edu.length) setEducationList(edu);
+            }
+
+            // Work / Experience
+            const workArr = getArrayFrom(root, 'experience', 'work', 'workExperience');
+            if (workArr) {
+                const work = workArr.map(item => {
+                    const w = asRecord(item);
+                    const endDate = getString(w, 'endDate', 'to');
+                    const current = w['current'] === true;
+                    return {
+                        id: uuidv4(),
+                        position: getString(w, 'position', 'title'),
+                        company: getString(w, 'company', 'employer'),
+                        type: getString(w, 'type'),
+                        startDate: getString(w, 'startDate', 'from'),
+                        endDate: endDate || (current ? 'Present' : ''),
+                        description: getString(w, 'description', 'summary', 'details'),
+                    };
+                });
+                if (work.length) setWorkList(work);
+            }
+
+            // Skills
+            const skillsArr = getArrayFrom(root, 'skills');
+            if (skillsArr) {
+                const skills = skillsArr.map(item => {
+                    if (typeof item === 'string') return { id: uuidv4(), name: item };
+                    const s = asRecord(item);
+                    return { id: uuidv4(), name: getString(s, 'name') };
+                });
+                if (skills.length) setSkills(skills);
+            }
+
+            // Soft skills
+            const softArr = getArrayFrom(root, 'softSkills', 'soft_skills');
+            if (softArr) {
+                const soft = softArr.map(item => {
+                    if (typeof item === 'string') return { id: uuidv4(), name: item };
+                    const s = asRecord(item);
+                    return { id: uuidv4(), name: getString(s, 'name') };
+                });
+                if (soft.length) setSoftSkills(soft);
+            }
+
+            // Interests
+            const intsArr = getArrayFrom(root, 'interests');
+            if (intsArr) {
+                const ints = intsArr.map(item => {
+                    if (typeof item === 'string') return { id: uuidv4(), name: item };
+                    const i = asRecord(item);
+                    return { id: uuidv4(), name: getString(i, 'name') };
+                });
+                if (ints.length) setInterests(ints);
+            }
+
+            // Projects
+            const projectsArr = getArrayFrom(root, 'projects');
+            if (projectsArr) {
+                const projects = projectsArr.map(item => {
+                    const p = asRecord(item);
+                    return {
+                        id: uuidv4(),
+                        name: getString(p, 'name', 'title'),
+                        url: getString(p, 'url', 'link'),
+                        github: getString(p, 'github', 'repo'),
+                        description: getString(p, 'description', 'summary'),
+                    };
+                });
+                if (projects.length) setProjects(projects);
+            }
+
+            // Languages
+            const langsArr = getArrayFrom(root, 'languages');
+            if (langsArr) {
+                const langs = langsArr.map(item => {
+                    const l = asRecord(item);
+                    return { id: uuidv4(), name: getString(l, 'name', 'language'), level: getString(l, 'level', 'proficiency') };
+                });
+                if (langs.length) setLanguages(langs);
+            }
+
+            // Certificates
+            const certsArr = getArrayFrom(root, 'certificates', 'certs');
+            if (certsArr) {
+                const certs = certsArr.map(item => {
+                    const c = asRecord(item);
+                    return { id: uuidv4(), title: getString(c, 'title', 'name'), issuer: getString(c, 'issuer', 'institution'), year: getString(c, 'year', 'date') };
+                });
+                if (certs.length) setCertificates(certs);
+            }
+
+            // Social activities
+            const actsArr = getArrayFrom(root, 'socialActivities', 'activities');
+            if (actsArr) {
+                const acts = actsArr.map(item => {
+                    const a = asRecord(item);
+                    return { id: uuidv4(), role: getString(a, 'role', 'title'), organization: getString(a, 'organization', 'org'), description: getString(a, 'description', 'details') };
+                });
+                if (acts.length) setSocialActivities(acts);
+            }
+
+            return true;
+        } catch (e) {
+            console.warn('Failed to map parsed resume into context', e);
+            return false;
+        }
+    };
+
+    const handleSendToBuilder = async (id: string) => {
+        const resume = resumes.find(r => r.id === id);
+        if (resume && resume.jsonContent) {
+            // Populate the context with resume data
+            const success = populateResumeContext(resume.jsonContent);
+
+            if (success) {
+                // Navigate to builder with the data already in context
+                navigate('/resume-builder');
+            } else {
+                // If parsing fails, just navigate to builder
+                console.warn('Failed to load resume data, opening empty builder');
+                navigate('/resume-builder');
+            }
+        } else {
+            // No JSON content, just navigate
+            navigate('/resume-builder');
+        }
     };
 
     const handleSendToAnalyzer = (id: string) => {
@@ -165,6 +379,11 @@ export default function Dashboard() {
         <div className="space-y-6">
             <PageBreadcrumb pageTitle="Dashboard" />
 
+            {/* ... rest of your JSX remains the same until the Action Buttons section ... */}
+
+            {/* The rest of the component stays exactly the same */}
+            {/* I'm only showing the complete component for clarity */}
+
             {/* Page Header */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -223,7 +442,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+            {/* Stats Cards - keep existing code */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {stats.map((stat, index) => (
                     <div
@@ -244,9 +463,8 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* Score Distribution & Top Resume */}
+            {/* Score Distribution & Top Resume - keep existing code */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Score Distribution */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Score Distribution</h2>
@@ -295,7 +513,6 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Top Performer */}
                 <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -330,7 +547,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions - keep existing code */}
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -352,7 +569,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar - keep existing code */}
             <div className="flex items-center gap-4">
                 <div className="relative flex-1 max-w-md">
                     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,15 +744,14 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         ))}
-
                     </div>
                 )}
-                <ResumeViewer
-                    resume={selectedResume}
-                    onClose={handleCloseViewer}
-                />
             </div>
 
+            <ResumeViewer
+                resume={selectedResume}
+                onClose={handleCloseViewer}
+            />
         </div>
     );
 }
