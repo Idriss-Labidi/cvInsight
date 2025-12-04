@@ -351,4 +351,95 @@ public class ResumeService {
             throw new ResumeAnalysisException(e);
         }
     }
+
+    public JsonNode compareResumes(List<UUID> resumeIds) {
+        List<Resume> resumes = resumeRepository.findAllById(resumeIds);
+
+        ArrayNode resumeArray = objectMapper.createArrayNode();
+        for (Resume r : resumes) {
+            resumeArray.add(r.getJsonContent());
+        }
+
+        String prompt = """
+            You are a professional career analyst. Your task is to compare the provided resumes
+            and generate a structured JSON comparison.
+    
+            ### INPUT
+            **Resumes (JSON array)**:
+            %s
+    
+            ### YOUR TASK
+            Analyze all resumes and produce a deep, structured comparison. Focus on:
+            - Strengths of each resume
+            - Weaknesses or missing elements
+            - Skills comparison (common skills vs unique skills)
+            - Experience comparison (depth, relevance, diversity)
+            - Education comparison
+            - Overall strengths comparison
+            - Suitability for different roles
+            - A final verdict summarizing which resume is stronger for which goals
+    
+            ### STRICT OUTPUT RULES
+            1. Output **ONLY valid JSON**.
+            2. Output MUST be a **JSON OBJECT ONLY**.
+            3. Don't start or end with extra sentences or words, **ONLY THE JSON**
+            4. Follow the exact schema below.
+            5. No explanations, no markdown, no extra text.
+            6. Strings must not contain line breaks.
+            7. If the comparison cannot be made (e.g., not enough resumes), return an empty JSON object `{}`.
+    
+            ### REQUIRED OUTPUT JSON SCHEMA
+            {
+              "resumeSummaries": [
+                {
+                  "resumeId": "string",
+                  "keyStrengths": ["string"],
+                  "keyWeaknesses": ["string"],
+                  "uniqueSkills": ["string"],
+                  "notableExperiences": ["string"]
+                }
+              ],
+              "comparison": {
+                "commonSkills": ["string"],
+                "uniqueSkillsByResume": {
+                  "resumeId": ["string"]
+                },
+                "experienceComparison": {
+                  "strongerExperienceResumeId": "string or null",
+                  "summary": "string"
+                },
+                "educationComparison": {
+                  "strongerEducationResumeId": "string or null",
+                  "summary": "string"
+                },
+                "roleSuitability": [
+                  {
+                    "role": "string",
+                    "bestResumeId": "string",
+                    "reason": "string"
+                  }
+                ]
+              },
+              "finalVerdict": "string"
+            }
+    
+            ### FINAL INSTRUCTION
+            Respond with **ONLY** the JSON object, **STRICTLY** nothing else.
+        """.formatted(
+                    resumeArray.toPrettyString()
+            );
+
+        try {
+            String response = chatClient
+                    .prompt(prompt)
+                    .options(ChatOptions.builder().temperature(0.25).build())
+                    .call()
+                    .content();
+            System.out.println(response);
+            return objectMapper.readTree(response);
+        } catch (Exception e) {
+            throw new ResumeAnalysisException(e);
+        }
+
+    }
 }

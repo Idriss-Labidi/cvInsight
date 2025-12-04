@@ -146,5 +146,10 @@ public class ResumeController {
                 .body(resume.getFileData());
     }
 
+    @PostMapping("/resumes-comparison")
+    public ResponseEntity<JsonNode> comparison(@RequestBody List<UUID> resumeIds) {
+        return ResponseEntity.ok(resumeService.compareResumes(resumeIds));
+    }
+
     private record ErrorResponse(String message) {}
 }
