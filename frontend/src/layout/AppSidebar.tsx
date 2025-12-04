@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Link, useLocation } from "react-router";
-import { GridIcon, PieChartIcon, UserCircleIcon, ListIcon } from "../icons";
+import { GridIcon, PieChartIcon, UserCircleIcon, ListIcon, TableIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import Logo from "../components/common/Logo";
 
@@ -14,6 +14,11 @@ const navItems = [
         name: "CV Analysis",
         path: "/CvAnalysis",
         icon: <PieChartIcon />,
+    },
+    {
+        name: "Comparaison",
+        path: "/comparaison",
+        icon: <TableIcon />,
     },
     {
         name: "CV Extraction & Reformulation",
@@ -122,4 +127,3 @@ const AppSidebar = () => {
 };
 
 export default AppSidebar;
-
