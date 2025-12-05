@@ -17,7 +17,7 @@ import CvAnalysis from "./pages/CVAnalysis/CvAnalysis.tsx";
 import CareerRecommendations from "./pages/RecommandationPage/CareerRecommendations.tsx";
 import ResumeBuilder from "./pages/CVBuilder/ResumeBuilder.tsx";
 import PublicRoute from "./components/auth/PublicRoute.tsx";
-import ComparaisonPage from "./pages/Comparaison/ComparaisonPage.tsx";
+import ComparisonPage from "./pages/Comparaison/ComparisonPage.tsx";
 
 export default function App() {
     return (
@@ -62,7 +62,7 @@ export default function App() {
                                 <Route path="/CvAnalysis" element={<CvAnalysis />}/>
                                 <Route path="/Recommendation" element={<CareerRecommendations/>}/>
                                 <Route path="/resume-builder" element={<ResumeBuilder />} />
-                                <Route path="/comparaison" element={<ComparaisonPage />} />
+                                <Route path="/comparaison" element={<ComparisonPage />} />
                             </Route>
                         </Route>
 

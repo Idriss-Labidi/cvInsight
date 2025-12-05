@@ -107,7 +107,7 @@ const buildStats = (resume: ResumeRecord | null): ResumeStats => {
     };
 };
 
-const ComparaisonPage = () => {
+const ComparisonPage = () => {
     const [resumes, setResumes] = useState<ResumeRecord[]>([]);
     const [leftResumeId, setLeftResumeId] = useState<string>("");
     const [rightResumeId, setRightResumeId] = useState<string>("");
@@ -278,9 +278,11 @@ const ComparaisonPage = () => {
         setShowResults(true);
         setAiLoading(true);
         axiosInstance
-            .post<AiComparison>("/resume/resumes-comparison", {
-                resumeIds: [leftResumeId, rightResumeId]
-            })
+            .post<AiComparison>(
+                "/resume/resumes-comparison",
+                [leftResumeId, rightResumeId],
+                {timeout: 0}
+            )
             .then((response) => setAiComparison(response.data))
             .catch((fetchError) => {
                 setAiError(fetchError.response?.data?.error || "Failed to load AI comparison.");
@@ -754,4 +756,4 @@ const ResumeSnapshot = ({ title, resume, align = "left" }: ResumeSnapshotProps) 
     </div>
 );
 
-export default ComparaisonPage;
+export default ComparisonPage;

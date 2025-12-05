@@ -390,38 +390,46 @@ public class ResumeService {
     
             ### REQUIRED OUTPUT JSON SCHEMA
             {
-              "resumeSummaries": [
-                {
-                  "resumeId": "string",
-                  "keyStrengths": ["string"],
-                  "keyWeaknesses": ["string"],
-                  "uniqueSkills": ["string"],
-                  "notableExperiences": ["string"]
-                }
-              ],
-              "comparison": {
-                "commonSkills": ["string"],
-                "uniqueSkillsByResume": {
-                  "resumeId": ["string"]
-                },
-                "experienceComparison": {
-                  "strongerExperienceResumeId": "string or null",
-                  "summary": "string"
-                },
-                "educationComparison": {
-                  "strongerEducationResumeId": "string or null",
-                  "summary": "string"
-                },
-                "roleSuitability": [
-                  {
-                    "role": "string",
-                    "bestResumeId": "string",
-                    "reason": "string"
-                  }
-                ]
-              },
-              "finalVerdict": "string"
+               "summary": string,
+               "leftHighlights": string[],
+               "rightHighlights": string[],
+               "sharedStrengths": string[],
+               "gaps": string[],
+               "winner": "LEFT" | "RIGHT" | "TIE",
+               "hiringAdvice": string
             }
+        
+            ### INSTRUCTIONS
+            1. **summary**
+               Provide a short neutral paragraph describing key similarities and differences.
+        
+            2. **leftHighlights**
+               Bullet-point strengths *specific* to Resume A.
+        
+            3. **rightHighlights**
+               Bullet-point strengths *specific* to Resume B.
+        
+            4. **sharedStrengths**
+               Mention shared attributes if they exist in the resumes.
+        
+            5. **gaps**
+               Identify weaknesses or missing elements:
+               - Missing experience
+               - Lack of project diversity
+               - Weak skills
+               - Poor structure
+               - Low score (if available)
+               Do not invent details not present in JSON.
+        
+            6. **winner**
+               Decide the stronger resume:
+               - Use score (if available)
+               - If no score, compare experiences, skills, projects...
+               - If very close → "TIE"
+        
+            7. **hiringAdvice**
+               Provide 3–6 sentences telling a recruiter which candidate is better for typical tech roles, and considerations that matter.
+        
     
             ### FINAL INSTRUCTION
             Respond with **ONLY** the JSON object, **STRICTLY** nothing else.
@@ -435,7 +443,6 @@ public class ResumeService {
                     .options(ChatOptions.builder().temperature(0.25).build())
                     .call()
                     .content();
-            System.out.println(response);
             return objectMapper.readTree(response);
         } catch (Exception e) {
             throw new ResumeAnalysisException(e);
